@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- WPF front end. Thin: the work is done in HookMap.Core, the same code the command line uses. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>HookMap.App</RootNamespace>
+    <AssemblyName>HookMap.App</AssemblyName>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HookMap.Core\HookMap.Core.csproj" />
+  </ItemGroup>
+</Project>

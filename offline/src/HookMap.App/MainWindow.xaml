@@ -1,0 +1,161 @@
+<Window x:Class="HookMap.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="HookMap" Width="1280" Height="820" MinWidth="980" MinHeight="620" WindowStartupLocation="CenterScreen">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Instance -->
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="260"/><ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="MO2 folder" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <TextBox x:Name="InstanceBox" Grid.Column="1" ToolTip="The folder with ModOrganizer.ini, e.g. E:\Tabula Rasa"/>
+            <Button Grid.Column="2" Content="Browse..." Margin="6,0,6,0" Click="BrowseInstance_Click"/>
+            <TextBlock Grid.Column="3" Text="Profile" VerticalAlignment="Center" Margin="10,0,8,0"/>
+            <ComboBox x:Name="ProfileBox" Grid.Column="4" ToolTip="The profile you play with. HookMap only reads it."/>
+            <Button x:Name="ScanButton" Grid.Column="5" Content="Read SKSE mods" Style="{StaticResource Primary}" Margin="10,0,0,0" Click="Scan_Click"/>
+        </Grid>
+
+        <TabControl x:Name="Tabs" Grid.Row="1">
+            <!-- ================= SKSE mods ================= -->
+            <TabItem Header="SKSE mods">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock x:Name="ModsInfo" Grid.Row="0" TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource Dim}"
+                               Text="Read the SKSE mods of your profile. Tick &quot;Always on&quot; for the ones the bisect must never switch off (the crash logger, script libraries)."/>
+                    <DataGrid x:Name="ModsGrid" Grid.Row="1" IsReadOnly="False">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="Always on" Binding="{Binding Keep, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                            <DataGridTextColumn Header="Mod" Binding="{Binding Mod}" IsReadOnly="True" Width="260"/>
+                            <DataGridTextColumn Header="DLL" Binding="{Binding Dll}" IsReadOnly="True" Width="230"/>
+                            <DataGridTextColumn Header="Plugin name" Binding="{Binding Plugin}" IsReadOnly="True" Width="190"/>
+                            <DataGridTextColumn Header="Author" Binding="{Binding Author}" IsReadOnly="True" Width="140"/>
+                            <DataGridTextColumn Header="Ver" Binding="{Binding Version}" IsReadOnly="True" Width="60"/>
+                            <DataGridTextColumn Header="Runtime" Binding="{Binding Runtime}" IsReadOnly="True" Width="80"/>
+                            <DataGridTextColumn Header="State" Binding="{Binding State}" IsReadOnly="True" Width="150"/>
+                            <DataGridTextColumn Header="Patches" Binding="{Binding Hooks}" IsReadOnly="True" Width="60"/>
+                            <DataGridTextColumn Header="Shared" Binding="{Binding Shared}" IsReadOnly="True" Width="60"/>
+                            <DataGridTextColumn Header="Suspicion" Binding="{Binding Suspicion, StringFormat=F0}" IsReadOnly="True" Width="80"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Content="Add HookMap plugin to MO2" Click="InstallPlugin_Click"
+                                ToolTip="Creates a mod folder 'HookMap' in your MO2 mods folder with the in-game plugin. Enable it in MO2, start the game once, then read the report in the Hook map tab."/>
+                        <TextBlock x:Name="InstallInfo" VerticalAlignment="Center" Foreground="{StaticResource Dim}" Margin="6,0,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ================= Hook map ================= -->
+            <TabItem Header="Hook map">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="Load reports from MO2" Click="LoadReports_Click" ToolTip="Finds the snapshots the in-game plugin wrote (HookMap folder under SKSE\Plugins, also in overwrite)"/>
+                        <Button Content="Open report files..." Click="OpenReports_Click"/>
+                        <TextBlock x:Name="ReportInfo" VerticalAlignment="Center" Foreground="{StaticResource Dim}" Margin="6,0,0,0"
+                                   Text="No report loaded. Run the game once with the HookMap plugin on."/>
+                    </StackPanel>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="470"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                            <TextBlock Text="Who patches the game" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <DataGrid x:Name="ModuleGrid" Grid.Row="1">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Module" Binding="{Binding Module}" Width="190"/>
+                                    <DataGridTextColumn Header="Patches" Binding="{Binding Hooks}" Width="62"/>
+                                    <DataGridTextColumn Header="Shared" Binding="{Binding OverlapGroups}" Width="58"/>
+                                    <DataGridTextColumn Header="Late" Binding="{Binding LateHooks}" Width="45"/>
+                                    <DataGridTextColumn Header="Kinds" Binding="{Binding KindText}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="10"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                            <TextBlock Text="Functions patched by more than one DLL" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <DataGrid x:Name="OverlapGrid" Grid.Row="1" SelectionChanged="OverlapGrid_SelectionChanged">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Level" Binding="{Binding Severity}" Width="90"/>
+                                    <DataGridTextColumn Header="Function" Binding="{Binding Title}" Width="*"/>
+                                    <DataGridTextColumn Header="Patched by" Binding="{Binding OwnersText}" Width="2*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBox x:Name="OverlapDetail" Grid.Row="3" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap"
+                                     HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- ================= Crash ================= -->
+            <TabItem Header="Crash log">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <ComboBox x:Name="CrashBox" IsEditable="False" SelectionChanged="CrashBox_SelectionChanged"/>
+                        <Button Grid.Column="1" Content="Browse..." Margin="6,0,6,0" Click="BrowseCrash_Click"/>
+                        <Button Grid.Column="2" Content="Refresh list" Click="RefreshCrash_Click"/>
+                    </Grid>
+                    <TextBox x:Name="CrashText" Grid.Row="1" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap"
+                             HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+                </Grid>
+            </TabItem>
+
+            <!-- ================= Bisect ================= -->
+            <TabItem Header="Bisect">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="400"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Dim}" Margin="0,0,0,10"
+                                       Text="Finds the smallest set of SKSE mods that still crashes. It works on a copy of your profile and never touches your own profile or any mod folder."/>
+                            <TextBlock Text="Session name" Margin="0,0,0,2"/>
+                            <TextBox x:Name="SessionName" Text="Bisect 1" Margin="0,0,0,8"/>
+                            <TextBlock Text="Test profile (made by HookMap)" Margin="0,0,0,2"/>
+                            <TextBox x:Name="TestProfileBox" Text="HookMap Bisect" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="Copy the newest" VerticalAlignment="Center"/>
+                                <TextBox x:Name="SavesBox" Text="1" Width="34" Margin="6,0,6,0" HorizontalContentAlignment="Center"/>
+                                <TextBlock Text="save(s) into the test profile" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <CheckBox x:Name="UseSuspicion" IsChecked="True" Margin="0,0,0,8" Content="Try the most suspicious mods first (needs a crash log or report)"/>
+                            <Button Content="Create plan" Style="{StaticResource Primary}" HorizontalAlignment="Left" Click="CreatePlan_Click" Margin="0,0,0,8"/>
+                            <TextBlock x:Name="PlanInfo" TextWrapping="Wrap" Foreground="{StaticResource Dim}" Margin="0,0,0,14"/>
+                            <TextBlock Text="Saved sessions" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="SessionsBox" Margin="0,0,0,6"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Resume" Click="ResumeSession_Click"/>
+                                <Button Content="Delete" Click="DeleteSession_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="170"/></Grid.RowDefinitions>
+                        <TextBlock x:Name="StepTitle" FontSize="16" FontWeight="SemiBold" Text="No plan yet" Margin="0,0,0,6"/>
+                        <TextBox x:Name="StepText" Grid.Row="1" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="12"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
+                            <Button x:Name="PrepareButton" Content="1. Prepare the test profile" Style="{StaticResource Primary}" Click="Prepare_Click" IsEnabled="False"/>
+                            <Button x:Name="OpenMo2Button" Content="Open Mod Organizer" Click="OpenMo2_Click" IsEnabled="False"/>
+                            <TextBlock Text="  2. Play the same test, then answer:" VerticalAlignment="Center" Margin="12,0,10,0"/>
+                            <Button x:Name="CrashedButton" Content="It crashed" Click="Crashed_Click" IsEnabled="False"/>
+                            <Button x:Name="OkButton" Content="No crash" Click="NoCrash_Click" IsEnabled="False"/>
+                            <Button x:Name="SkipButton" Content="Unusable" Click="Skip_Click" IsEnabled="False" ToolTip="A different crash, or the game did not start: counts as 'no crash' but is marked"/>
+                            <Button x:Name="UndoButton" Content="Undo last" Click="Undo_Click" IsEnabled="False"/>
+                        </StackPanel>
+                        <ListBox x:Name="HistoryList" Grid.Row="3" FontFamily="Consolas" FontSize="12"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <TextBlock x:Name="StatusText" Grid.Row="2" Margin="0,10,0,0" Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis"/>
+    </Grid>
+</Window>

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>HookMap</AssemblyName>
+    <RootNamespace>HookMap.Cli</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="..\HookMap.Core\HookMap.Core.csproj" /></ItemGroup>
+</Project>

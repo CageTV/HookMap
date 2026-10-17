@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+plugin/build/
+release/
+dist/
+CLAUDE.md

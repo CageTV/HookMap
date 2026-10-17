@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/HookMap.Core/HookMap.Core.csproj" />
+  <Project Path="src/HookMap.Cli/HookMap.Cli.csproj" />
+  <Project Path="src/HookMap.App/HookMap.App.csproj" />
+  <Project Path="tests/HookMap.Core.Tests/HookMap.Core.Tests.csproj" />
+</Solution>
