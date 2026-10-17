@@ -15,9 +15,7 @@
         <SolidColorBrush x:Key="Good" Color="#6DC28A"/>
 
         <Style TargetType="Window"><Setter Property="Background" Value="{StaticResource Bg}"/><Setter Property="Foreground" Value="{StaticResource Text}"/></Style>
-        <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Text}"/></Style>
         <Style TargetType="CheckBox"><Setter Property="Foreground" Value="{StaticResource Text}"/><Setter Property="VerticalAlignment" Value="Center"/></Style>
-        <Style TargetType="Label"><Setter Property="Foreground" Value="{StaticResource Text}"/></Style>
         <Style TargetType="TextBox">
             <Setter Property="Background" Value="{StaticResource Panel}"/><Setter Property="Foreground" Value="{StaticResource Text}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Line}"/><Setter Property="Padding" Value="4,3"/><Setter Property="CaretBrush" Value="{StaticResource Text}"/>
