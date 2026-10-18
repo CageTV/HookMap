@@ -43,3 +43,7 @@ Command line: `HookMap.exe mods|report|crash|plan ...` (run it without arguments
 - It shows where plugins patch the game and what a crash's call stack contains. It cannot say that two patches fight each other: that is for the bisect.
 - The bisect needs a crash you can repeat in a few minutes.
 - Mods that carry a plugin other mods need (patches), and a patch that depends on many SKSE mods at once, stay on or go off together; the plan says which.
+
+## License
+
+GPL-3.0-only. See LICENSE.txt.
