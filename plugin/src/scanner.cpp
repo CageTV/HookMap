@@ -814,7 +814,6 @@ namespace hookmap
                         {
                             std::string nm = c.clsNames[cls] + "::vfunc[" + std::to_string(slot) + "]";
                             back.names.insert(back.names.begin(), nm);
-                            if (!back.funcKnown) back.group = "V:" + c.clsNames[cls] + "#" + std::to_string(slot);
                         }
                     }
                 }

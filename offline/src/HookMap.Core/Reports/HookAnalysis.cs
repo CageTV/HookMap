@@ -66,13 +66,16 @@ public sealed class HookAnalysis
             }
         }
 
-        foreach (var g in a.Hooks.GroupBy(h => h.Hook.Group))
+        // A class with several virtual tables (multiple inheritance) has a slot 1 in each: only the same table address is the same slot, so "V:Class#slot" keys of older reports are replaced by the slot itself.
+        foreach (var g in a.Hooks.GroupBy(h => h.Hook.Group.StartsWith("V:", StringComparison.Ordinal) ? "P:" + h.Hook.Site : h.Hook.Group))
         {
             var list = g.ToList();
             if (list.Count < 2) continue;
             var owners = list.Where(h => h.Hook.OwnerKnown).Select(h => h.Hook.Owner).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
             bool unknown = list.Any(h => !h.Hook.OwnerKnown);
-            string sev = owners.Count >= 2 ? "two-modules" : owners.Count == 1 && unknown ? "possible" : "";
+            // One memory slot can only hold one owner at a time: two owners on the same site means a later snapshot found it taken over by another DLL.
+            bool oneSite = list.Select(h => h.Hook.Site).Distinct().Count() == 1;
+            string sev = owners.Count >= 2 ? (oneSite ? "taken-over" : "two-modules") : owners.Count == 1 && unknown ? "possible" : "";
             if (sev.Length == 0) continue;
             var first = list.OrderBy(h => h.Hook.Names.Count == 0).First().Hook;
             a.Overlaps.Add(new OverlapGroup
@@ -83,7 +86,7 @@ public sealed class HookAnalysis
         }
         a.Overlaps.Sort((x, y) =>
         {
-            int c = (y.Severity == "two-modules").CompareTo(x.Severity == "two-modules");
+            int c = Rank(y.Severity).CompareTo(Rank(x.Severity));
             return c != 0 ? c : y.Owners.Count.CompareTo(x.Owners.Count);
         });
 
@@ -99,7 +102,7 @@ public sealed class HookAnalysis
             if (h.Late) s.LateHooks++;
             s.Kinds[h.Hook.Kind] = s.Kinds.GetValueOrDefault(h.Hook.Kind) + 1;
         }
-        foreach (var o in a.Overlaps.Where(o => o.Severity == "two-modules"))
+        foreach (var o in a.Overlaps.Where(o => o.Severity is "two-modules" or "taken-over"))
             foreach (var owner in o.Owners)
             {
                 var s = mods[owner];
@@ -109,6 +112,8 @@ public sealed class HookAnalysis
         a.Modules.AddRange(mods.Values.OrderByDescending(m => m.OverlapGroups).ThenByDescending(m => m.Hooks).ThenBy(m => m.Module, StringComparer.OrdinalIgnoreCase));
         return a;
     }
+
+    private static int Rank(string severity) => severity switch { "two-modules" => 2, "taken-over" => 1, _ => 0 };
 
     // ------------------------------------------------------------------ with a crash log
 

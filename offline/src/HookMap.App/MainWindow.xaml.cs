@@ -40,7 +40,7 @@ public sealed record ModuleRow(string Module, int Hooks, int OverlapGroups, int 
 public sealed class OverlapRow(OverlapGroup g)
 {
     public OverlapGroup Group => g;
-    public string Severity => g.Severity == "two-modules" ? "2+ DLLs" : "possible";
+    public string Severity => g.Severity switch { "two-modules" => "2+ DLLs", "taken-over" => "taken over", _ => "possible" };
     public string Title => g.Title;
     public string OwnersText => string.Join(", ", g.Owners);
 }
