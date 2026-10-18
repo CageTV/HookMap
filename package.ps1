@@ -47,7 +47,7 @@ if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force -Path "$stage\SKSE\Plugins" | Out-Null
 Copy-Item $dll "$stage\SKSE\Plugins\"
 Copy-Item "$PSScriptRoot\README.md" $stage
-Copy-Item "$PSScriptRooticense.txt" $stage
+Copy-Item "$PSScriptRoot\LICENSE.txt" $stage
 $pluginZip = Join-Path $release "HookMap Plugin-$version.zip"
 New-Zip $stage $pluginZip
 Write-Host "Plugin: $pluginZip" -ForegroundColor Green
@@ -55,7 +55,7 @@ Write-Host "Plugin: $pluginZip" -ForegroundColor Green
 New-Item -ItemType Directory -Force -Path "$app\Plugin\SKSE\Plugins" | Out-Null
 Copy-Item $dll "$app\Plugin\SKSE\Plugins\" -Force
 Copy-Item "$PSScriptRoot\README.md" $app -Force
-Copy-Item "$PSScriptRooticense.txt" $app -Force
+Copy-Item "$PSScriptRoot\LICENSE.txt" $app -Force
 Get-ChildItem $app -Filter "*.pdb" -File | Remove-Item -Force
 $toolZip = Join-Path $release "HookMap-$version.zip"
 New-Zip $app $toolZip
