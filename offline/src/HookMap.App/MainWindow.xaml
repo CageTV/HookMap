@@ -47,6 +47,7 @@
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0">
                         <Button Content="Add HookMap plugin to MO2" Click="InstallPlugin_Click"
                                 ToolTip="Creates a mod folder 'HookMap' in your MO2 mods folder with the in-game plugin. Enable it in MO2, start the game once, then read the report in the Hook map tab."/>
+                        <Button Content="Reset Always on to defaults" Click="ResetKeep_Click" ToolTip="Unticks everything except the crash logger and the script libraries"/>
                         <TextBlock x:Name="InstallInfo" VerticalAlignment="Center" Foreground="{StaticResource Dim}" Margin="6,0,0,0"/>
                     </StackPanel>
                 </Grid>

@@ -110,9 +110,11 @@ public partial class MainWindow : Window
         return true;
     }
 
-    private async void Scan_Click(object s, RoutedEventArgs e)
+    private async void Scan_Click(object s, RoutedEventArgs e) => await ReadModsAsync();
+
+    private async Task<bool> ReadModsAsync()
     {
-        if (!TryOpenInstance(true) || _inst is null || ProfileBox.SelectedItem is not string profile) return;
+        if (!TryOpenInstance(true) || _inst is null || ProfileBox.SelectedItem is not string profile) return false;
         ScanButton.IsEnabled = false;
         Status("Reading the SKSE mods...");
         try
@@ -130,8 +132,9 @@ public partial class MainWindow : Window
             Status($"Read {mods.Count} SKSE mods.");
             _settings.InstanceRoot = InstanceBox.Text; _settings.Profile = profile; _settings.Save();
             if (_analysis is null) LoadReports(false);
+            return true;
         }
-        catch (Exception ex) { Status("Could not read the mods: " + ex.Message); }
+        catch (Exception ex) { Status("Could not read the mods: " + ex.Message); return false; }
         finally { ScanButton.IsEnabled = true; }
     }
 
@@ -149,6 +152,13 @@ public partial class MainWindow : Window
             }
         var sorted = _rows.OrderByDescending(r => r.Suspicion).ThenByDescending(r => r.Shared).ThenBy(r => r.Mod, StringComparer.OrdinalIgnoreCase).ToList();
         if (_corr is not null || _analysis is not null) { _rows.Clear(); foreach (var r in sorted) _rows.Add(r); }
+    }
+
+    private void ResetKeep_Click(object s, RoutedEventArgs e)
+    {
+        foreach (var m in _mods) _settings.Keep[m.Name] = DefaultKeep.Matches(m);
+        RebuildRows();
+        InstallInfo.Text = $"{_mods.Count(DefaultKeep.Matches)} mods are always on now (the defaults).";
     }
 
     private void InstallPlugin_Click(object s, RoutedEventArgs e)
@@ -354,9 +364,14 @@ public partial class MainWindow : Window
 
     private async void CreatePlan_Click(object s, RoutedEventArgs e)
     {
-        if (_inst is null || ProfileBox.SelectedItem is not string profile || _mods.Count == 0) { Status("Read the SKSE mods first (button at the top)."); return; }
+        if (_mods.Count == 0)
+        {
+            PlanInfo.Text = "Reading the SKSE mods of the profile first...";
+            if (!await ReadModsAsync()) { PlanInfo.Text = "Could not read the SKSE mods: " + StatusText.Text; return; }
+        }
+        if (_inst is null || ProfileBox.SelectedItem is not string profile) { PlanInfo.Text = "Pick the MO2 folder and a profile at the top first."; return; }
         var testName = TestProfileBox.Text.Trim();
-        if (testName.Length == 0 || testName.Equals(profile, StringComparison.OrdinalIgnoreCase)) { Status("Choose a test profile name that is different from your profile."); return; }
+        if (testName.Length == 0 || testName.Equals(profile, StringComparison.OrdinalIgnoreCase)) { PlanInfo.Text = "Choose a test profile name that is different from your profile."; return; }
         PlanInfo.Text = "Working out which mods depend on which...";
         var susp = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
         if (UseSuspicion.IsChecked == true && _corr is not null)
