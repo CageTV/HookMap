@@ -470,6 +470,9 @@ public partial class MainWindow : Window
                     StepTitle.Text = done.Culprits is null ? "Finished: it never crashed" : done.Culprits.Count == 0 ? "Finished: not these mods" : $"Finished: {done.Culprits.Count} mod unit(s)";
                     var sb = new StringBuilder();
                     sb.AppendLine(done.Summary);
+                    if (done.Culprits is null && _session.History.Any(h => h.Result == TestResult.Unresolved))
+                        sb.AppendLine("
+An earlier run was answered \"Unusable\", which counts as no crash. If that run did crash, press \"Undo last\" and answer \"It crashed\" instead.");
                     if (done.Culprits is { Count: > 0 })
                     {
                         sb.AppendLine();
