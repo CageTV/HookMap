@@ -471,8 +471,7 @@ public partial class MainWindow : Window
                     var sb = new StringBuilder();
                     sb.AppendLine(done.Summary);
                     if (done.Culprits is null && _session.History.Any(h => h.Result == TestResult.Unresolved))
-                        sb.AppendLine("
-An earlier run was answered \"Unusable\", which counts as no crash. If that run did crash, press \"Undo last\" and answer \"It crashed\" instead.");
+                        sb.AppendLine(Environment.NewLine + "An earlier run was answered \"Unusable\", which counts as no crash. If that run did crash, press \"Undo last\" and answer \"It crashed\" instead.");
                     if (done.Culprits is { Count: > 0 })
                     {
                         sb.AppendLine();
